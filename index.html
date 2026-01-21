@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Proje Çanakkale – Demo (Üretici + Devlet)</title>
+
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --text:#111827;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --accent:#0f3d5e;
+    --danger:#b91c1c;
+    --ok:#065f46;
+    --bad:#7f1d1d;
+    --warnbg:#fff7ed;
+    --warnline:#fed7aa;
+    --shadow:0 10px 30px rgba(0,0,0,.08);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background:var(--bg);
+    margin:0;
+    padding:40px;
+    color:var(--text);
+  }
+  .card{
+    max-width:1100px;
+    margin:0 auto 18px auto;
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:32px;
+    box-shadow:var(--shadow);
+  }
+  h1{margin:0 0 6px 0}
+  .sub{color:var(--muted);margin:0 0 18px 0}
+  label{display:block;margin-top:14px;font-weight:650}
+  input, select{
+    width:100%;
+    padding:10px 12px;
+    margin-top:6px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-size:14px;
+    background:#fff;
+  }
+  input[readonly]{background:#f3f4f6}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:820px){ .row{grid-template-columns:1fr} body{padding:18px} .card{padding:22px} }
+
+  button{
+    margin-top:18px;
+    padding:12px 14px;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:750;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--accent);color:#fff;width:100%}
+  .btn-danger{background:var(--danger);color:#fff;width:100%}
+  .btn-ghost{background:#eef2f7;color:#111827}
+  .btn-inline{width:auto}
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+  }
+  .badge{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:#eef2ff;
+    color:#1f2a44;
+  }
+  .note{
+    margin-top:14px;
+    background:var(--warnbg);
+    border:1px solid var(--warnline);
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:14px;
+  }
+  .statusBox{
+    margin-top:16px;
+    padding:14px;
+    border-radius:12px;
+    font-weight:750;
+  }
+  .ok{background:#dcfce7;color:var(--ok)}
+  .bad{background:#fee2e2;color:var(--bad)}
+  .muted{color:var(--muted)}
+  .actionsRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+  /* table */
+  .filters{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .filters input, .filters select{width:auto;min-width:220px}
+  table{width:100%;border-collapse:collapse;margin-top:16px}
+  th, td{padding:12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+  th{background:#f3f4f6}
+  tr:hover{background:#f9fafb;cursor:pointer}
+  .status-ok{color:var(--ok);font-weight:800}
+  .status-bad{color:var(--bad);font-weight:800}
+
+  /* modal */
+  .modal{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.42);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:50;
+  }
+  .modalContent{
+    background:#fff;
+    width:100%;
+    max-width:720px;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 20px 50px rgba(0,0,0,.18);
+  }
+  .modalHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .modalHeader h2{margin:0}
+  .hr{height:1px;background:var(--line);margin:14px 0}
+  .kv{display:grid;grid-template-columns:220px 1fr;gap:8px 12px}
+  @media (max-width:720px){ .kv{grid-template-columns:1fr} }
+  .k{color:var(--muted);font-weight:650}
+  .v{font-weight:650}
+  .small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="card" id="loginView">
+  <div class="topbar">
+    <div>
+      <h1>Giriş</h1>
+      <p class="sub">Demo amaçlı rol bazlı giriş (Üretici / Devlet).</p>
+    </div>
+    <span class="badge">Proje Çanakkale</span>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Kullanıcı Kodu</label>
+      <input id="loginCode" placeholder="Örn: TR-17-001 veya DEVLET" />
+    </div>
+    <div>
+      <label>Şifre</label>
+      <input id="loginPw" type="password" placeholder="Şifre" />
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="doLogin()">Giriş</button>
+
+  <div class="note">
+    <strong>Login:</strong><br>
+    Üretici: <code>TR-17-001</code> / <code>Ezine</code><br>
+    Devlet: <code>DEVLET</code> / <code>Devlet</code><br>
+    <span class="small">Not: Demo olduğu için gerçek güvenlik / kullanıcı yönetimi yoktur.</span>
+  </div>
+</div>
+
+<!-- PRODUCER VIEW -->
+<div class="card" id="producerView" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>Üretici Veri Girişi</h1>
+      <p class="sub">Paketleme tamamlandıktan sonra kayıt kilitlenir ve değiştirilemez.</p>
+    </div>
+    <div class="actionsRow">
+      <span class="badge" id="producerBadge">Üretici</span>
+      <button class="btn-ghost btn-inline" onclick="logout()">Çıkış</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Üretici Adı</label>
+      <input id="pName" readonly />
+    </div>
+    <div>
+      <label>Üretici Kodu</label>
+      <input id="pCode" readonly />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Ürün</label>
+      <input id="pProduct" placeholder="Örn: Ezine Peyniri" />
+    </div>
+    <div>
+      <label>Parti No</label>
+      <input id="pBatch" placeholder="Örn: EZ-2026-05" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Üretim Tarihi</label>
+      <input id="pProdDate" type="date" />
+    </div>
+    <div>
+      <label>Paketleme Tarihi</label>
+      <input id="pPackDate" type="date" onchange="calcMonths()" />
+    </div>
+  </div>
+
+  <label>Olgunlaştırma Süresi (ay)</label>
+  <input id="pMonths" readonly />
+
+  <div class="note">
+    ⚠️ <strong>Paketleme tamamla</strong> işleminden sonra kayıt kilitlenir.
+  </div>
+
+  <button class="btn-danger" id="finalizeBtn" onclick="finalizeRecord()">Paketleme tamamla</button>
+
+  <div id="producerResult"></div>
+</div>
+
+<!-- STATE VIEW -->
+<div class="card" id="stateView" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>Devlet Gözlem Paneli</h1>
+      <p class="sub">Veriler otomatik kurallara göre oluşturulur. Manuel değerlendirme / müdahale yoktur.</p>
+    </div>
+    <div class="actionsRow">
+      <span class="badge">Devlet</span>
+      <button class="btn-ghost btn-inline" onclick="logout()">Çıkış</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <input id="q" placeholder="Ara: üretici, ürün, parti, referans" onkeyup="renderTable()" />
+    <select id="statusFilter" onchange="renderTable()">
+      <option value="">Tüm Durumlar</option>
+      <option value="Uygun">🟢 Uygun</option>
+      <option value="Uygunsuz">🔴 Uygunsuz</option>
+    </select>
+    <select id="ageFilter" onchange="renderTable()">
+      <option value="">Tüm Süreler</option>
+      <option value="lt12">&lt; 12 ay</option>
+      <option value="gte12">≥ 12 ay</option>
+    </select>
+  </div>
+
+  <div class="actionsRow">
+    <button class="btn-ghost btn-inline" onclick="exportCSV()">CSV Dışa Aktar</button>
+    <button class="btn-ghost btn-inline" onclick="openPrintView()">PDF (Yazdır) – Simülasyon</button>
+    <span class="small">PDF için: Yazdır penceresinde “PDF olarak kaydet”.</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Referans</th>
+        <th>Üretici</th>
+        <th>Ürün</th>
+        <th>Parti</th>
+        <th>Ay</th>
+        <th>Durum</th>
+        <th>Finalizasyon</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <p class="small muted" id="countInfo"></p>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal" id="modal" onclick="if(event.target.id==='modal') closeModal()">
+  <div class="modalContent" id="modalContent"></div>
+</div>
+
+<script>
+/* -------------------------
+   0) USERS + DEMO DATA
+-------------------------- */
+const USERS = [
+  { code:"TR-17-001", pw:"Ezine",  role:"producer", name:"Proje Canakkale" },
+  { code:"DEVLET",    pw:"Devlet", role:"state",    name:"Tarım ve Gıda Otoritesi" }
+];
+
+// LocalStorage key
+const STORE_KEY = "pc_demo_records_v1";
+
+// Dummy data (only used if storage empty)
+const DUMMY = [
+  makeRecord({
+    producer:"Proje Canakkale", code:"TR-17-001",
+    product:"Ezine Peyniri", batch:"EZ-2026-01",
+    months:14, finalizedAt:"14.01.2026 10:32"
+  }),
+  makeRecord({
+    producer:"Kazdağı Mandıra", code:"TR-17-002",
+    product:"Tulum Peyniri", batch:"KD-2026-03",
+    months:8, finalizedAt:"11.01.2026 09:10"
+  }),
+  makeRecord({
+    producer:"Çanakkale Peynir Koop.", code:"TR-17-003",
+    product:"Beyaz Peynir", batch:"CK-2026-02",
+    months:6, finalizedAt:"08.01.2026 15:44"
+  }),
+  makeRecord({
+    producer:"Gelibolu Süt Ürünleri", code:"TR-17-004",
+    product:"Koyun Peyniri", batch:"GL-2026-04",
+    months:12, finalizedAt:"16.01.2026 11:05"
+  })
+];
+
+// In-memory
+let currentUser = null;
+let records = loadRecords();
+
+/* -------------------------
+   1) HELPERS: STATUS, REF, HASH
+-------------------------- */
+function getStatus(months){
+  // Only 2 statuses (no "İncelemede")
+  if(months >= 12){
+    return { text:"Uygun", class:"status-ok", rule:"Olgunlaştırma süresi ≥ 12 ay" };
+  }
+  return { text:"Uygunsuz", class:"status-bad", rule:"Olgunlaştırma süresi < 12 ay" };
+}
+
+// Simple deterministic hash (demo) -> hex string
+function demoHash(str){
+  // FNV-1a 32-bit
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24))) >>> 0;
+  }
+  return ("0000000" + h.toString(16)).slice(-8).toUpperCase();
+}
+
+function pad4(n){ return String(n).padStart(4,"0"); }
+
+function buildReference({code, batch, finalizedAt}){
+  // Example: PC-17-001-2026-0007
+  // Keep it stable-ish: based on code + batch + date
+  const year = (finalizedAt && finalizedAt.slice(-4)) ? finalizedAt.slice(-4) : String(new Date().getFullYear());
+  const short = code.replace("TR-","").replaceAll("-","");
+  const seed = demoHash(code + "|" + batch + "|" + year);
+  // last 3 digits
+  const seq = parseInt(seed.slice(-3), 16) % 10000;
+  return `PC-${short}-${year}-${pad4(seq)}`;
+}
+
+function makeRecord({producer, code, product, batch, months, finalizedAt}){
+  const status = getStatus(months);
+  const payload = `${producer}|${code}|${product}|${batch}|${months}|${finalizedAt}`;
+  const hash = demoHash(payload);
+  const ref = buildReference({code, batch, finalizedAt});
+  return {
+    producer, code, product, batch, months,
+    status: status.text,
+    rule: status.rule,
+    finalizedAt,
+    ref,
+    hash
+  };
+}
+
+/* -------------------------
+   2) STORAGE
+-------------------------- */
+function loadRecords(){
+  const raw = localStorage.getItem(STORE_KEY);
+  if(!raw){
+    localStorage.setItem(STORE_KEY, JSON.stringify(DUMMY));
+    return [...DUMMY];
+  }
+  try{
+    const arr = JSON.parse(raw);
+    if(Array.isArray(arr) && arr.length) return arr;
+    localStorage.setItem(STORE_KEY, JSON.stringify(DUMMY));
+    return [...DUMMY];
+  }catch{
+    localStorage.setItem(STORE_KEY, JSON.stringify(DUMMY));
+    return [...DUMMY];
+  }
+}
+
+function saveRecords(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(records));
+}
+
+/* -------------------------
+   3) AUTH + VIEW ROUTING
+-------------------------- */
+function doLogin(){
+  const c = document.getElementById("loginCode").value.trim();
+  const p = document.getElementById("loginPw").value;
+  const u = USERS.find(x => x.code === c && x.pw === p);
+  if(!u){ alert("Hatalı giriş"); return; }
+  currentUser = u;
+
+  document.getElementById("loginView").style.display = "none";
+
+  if(u.role === "producer"){
+    document.getElementById("producerView").style.display = "block";
+    document.getElementById("producerBadge").textContent = `Üretici: ${u.name}`;
+    document.getElementById("pName").value = u.name;
+    document.getElementById("pCode").value = u.code;
+    resetProducerForm(true);
+  }else{
+    document.getElementById("stateView").style.display = "block";
+    renderTable();
+  }
+}
+
+function logout(){
+  currentUser = null;
+  document.getElementById("loginCode").value = "";
+  document.getElementById("loginPw").value = "";
+
+  document.getElementById("producerView").style.display = "none";
+  document.getElementById("stateView").style.display = "none";
+  document.getElementById("loginView").style.display = "block";
+}
+
+/* -------------------------
+   4) PRODUCER FLOW
+-------------------------- */
+function calcMonths(){
+  const prod = new Date(document.getElementById("pProdDate").value);
+  const pack = new Date(document.getElementById("pPackDate").value);
+  if(isNaN(prod) || isNaN(pack)){
+    document.getElementById("pMonths").value = "";
+    return;
+  }
+  const months = Math.floor((pack - prod) / (1000*60*60*24*30));
+  document.getElementById("pMonths").value = months;
+}
+
+function finalizeRecord(){
+  const product = document.getElementById("pProduct").value.trim();
+  const batch = document.getElementById("pBatch").value.trim();
+  const months = parseInt(document.getElementById("pMonths").value, 10);
+
+  if(!product || !batch){
+    alert("Lütfen Ürün ve Parti No alanlarını doldurun.");
+    return;
+  }
+  if(Number.isNaN(months)){
+    alert("Lütfen Üretim ve Paketleme tarihlerini girin.");
+    return;
+  }
+
+  const now = new Date();
+  const finalizedAt = now.toLocaleString("tr-TR");
+
+  const rec = makeRecord({
+    producer: document.getElementById("pName").value,
+    code: document.getElementById("pCode").value,
+    product, batch, months, finalizedAt
+  });
+
+  records.unshift(rec);
+  saveRecords();
+
+  lockProducerInputs(true);
+
+  const cls = (rec.status === "Uygun") ? "ok" : "bad";
+  document.getElementById("producerResult").innerHTML = `
+    <div class="statusBox ${cls}">
+      ✅ Kayıt başarıyla tamamlandı<br>
+      <span class="muted">Durum:</span> ${rec.status} &nbsp;|&nbsp;
+      <span class="muted">Referans:</span> ${rec.ref} &nbsp;|&nbsp;
+      <span class="muted">Hash:</span> ${rec.hash}<br>
+      <span class="muted">Kural:</span> ${rec.rule}
+      <div class="actionsRow">
+        <button class="btn-primary btn-inline" onclick="resetProducerForm(false)">➕ Yeni ürün / yeni parti ekle</button>
+        <button class="btn-ghost btn-inline" onclick="openModalByRef('${rec.ref.replaceAll("'","")}')">Detay Gör</button>
+      </div>
+    </div>
+  `;
+}
+
+function lockProducerInputs(locked){
+  const ids = ["pProduct","pBatch","pProdDate","pPackDate"];
+  ids.forEach(id => document.getElementById(id).readOnly = locked);
+  document.getElementById("finalizeBtn").disabled = locked;
+  document.getElementById("finalizeBtn").style.opacity = locked ? "0.55" : "1";
+  document.getElementById("finalizeBtn").style.cursor = locked ? "not-allowed" : "pointer";
+}
+
+function resetProducerForm(keepProducerFields){
+  if(!keepProducerFields){
+    document.getElementById("pProduct").value = "";
+    document.getElementById("pBatch").value = "";
+    document.getElementById("pProdDate").value = "";
+    document.getElementById("pPackDate").value = "";
+    document.getElementById("pMonths").value = "";
+  }else{
+    document.getElementById("pProduct").value = "";
+    document.getElementById("pBatch").value = "";
+    document.getElementById("pProdDate").value = "";
+    document.getElementById("pPackDate").value = "";
+    document.getElementById("pMonths").value = "";
+  }
+  document.getElementById("producerResult").innerHTML = "";
+  lockProducerInputs(false);
+}
+
+/* -------------------------
+   5) STATE TABLE + SEARCH/FILTER + DETAILS
+-------------------------- */
+function renderTable(){
+  const q = (document.getElementById("q")?.value || "").toLowerCase();
+  const sf = document.getElementById("statusFilter")?.value || "";
+  const af = document.getElementById("ageFilter")?.value || "";
+
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+
+  let shown = 0;
+
+  records.forEach(r => {
+    // search
+    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash}`.toLowerCase();
+    if(q && !hay.includes(q)) return;
+
+    // status filter
+    if(sf && r.status !== sf) return;
+
+    // age filter
+    if(af==="lt12" && r.months >= 12) return;
+    if(af==="gte12" && r.months < 12) return;
+
+    const tr = document.createElement("tr");
+    tr.onclick = () => openDetailModal(r);
+
+    tr.innerHTML = `
+      <td><strong>${r.ref}</strong><div class="small">${r.hash}</div></td>
+      <td>${r.producer}<div class="small">${r.code}</div></td>
+      <td>${r.product}</td>
+      <td>${r.batch}</td>
+      <td>${r.months}</td>
+      <td class="${r.status==='Uygun'?'status-ok':'status-bad'}">${r.status}</td>
+      <td>${r.finalizedAt}</td>
+    `;
+    tbody.appendChild(tr);
+    shown++;
+  });
+
+  document.getElementById("countInfo").textContent = `Gösterilen kayıt: ${shown} / Toplam: ${records.length}`;
+}
+
+function openModalByRef(ref){
+  const r = records.find(x => x.ref === ref);
+  if(r) openDetailModal(r);
+}
+
+function openDetailModal(r){
+  document.getElementById("modal").style.display = "flex";
+  const statusClass = r.status === "Uygun" ? "ok" : "bad";
+
+  document.getElementById("modalContent").innerHTML = `
+    <div class="modalHeader">
+      <div>
+        <h2>Ürün Detayı</h2>
+        <div class="small">Read-only – manuel müdahale yoktur.</div>
+      </div>
+      <button class="btn-ghost btn-inline" onclick="closeModal()">Kapat</button>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="kv">
+      <div class="k">Referans No</div><div class="v">${r.ref}</div>
+      <div class="k">Hash</div><div class="v">${r.hash}</div>
+      <div class="k">Durum</div><div class="v"><span class="${statusClass} statusBox" style="display:inline-block;padding:8px 12px;margin:0">${r.status}</span></div>
+      <div class="k">Kural</div><div class="v">${r.rule}</div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="kv">
+      <div class="k">Üretici</div><div class="v">${r.producer}</div>
+      <div class="k">Üretici Kodu</div><div class="v">${r.code}</div>
+      <div class="k">Ürün</div><div class="v">${r.product}</div>
+      <div class="k">Parti No</div><div class="v">${r.batch}</div>
+      <div class="k">Olgunlaştırma Süresi</div><div class="v">${r.months} ay</div>
+      <div class="k">Finalizasyon</div><div class="v">${r.finalizedAt}</div>
+    </div>
+  `;
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+}
+
+/* -------------------------
+   6) EXPORTS (CSV + PDF SIMULATION)
+-------------------------- */
+function exportCSV(){
+  // Filtered export based on current filters/search
+  const q = (document.getElementById("q")?.value || "").toLowerCase();
+  const sf = document.getElementById("statusFilter")?.value || "";
+  const af = document.getElementById("ageFilter")?.value || "";
+
+  const rows = [];
+  rows.push([
+    "Referans","Hash","Uretici","UreticiKodu","Urun","PartiNo","Ay","Durum","Kural","Finalizasyon"
+  ]);
+
+  records.forEach(r=>{
+    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash}`.toLowerCase();
+    if(q && !hay.includes(q)) return;
+    if(sf && r.status !== sf) return;
+    if(af==="lt12" && r.months >= 12) return;
+    if(af==="gte12" && r.months < 12) return;
+
+    rows.push([
+      r.ref, r.hash, r.producer, r.code, r.product, r.batch, r.months, r.status, r.rule, r.finalizedAt
+    ]);
+  });
+
+  const csv = rows.map(r => r.map(cell => {
+    const s = String(cell ?? "");
+    // quote if contains comma or quote
+    if(s.includes(",") || s.includes('"') || s.includes("\n")){
+      return `"${s.replaceAll('"','""')}"`;
+    }
+    return s;
+  }).join(",")).join("\n");
+
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `proje_canakkale_kayitlar_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function openPrintView(){
+  // Print-friendly window (user can "Save as PDF")
+  const q = (document.getElementById("q")?.value || "").toLowerCase();
+  const sf = document.getElementById("statusFilter")?.value || "";
+  const af = document.getElementById("ageFilter")?.value || "";
+
+  const filtered = records.filter(r=>{
+    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash}`.toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    if(sf && r.status !== sf) return false;
+    if(af==="lt12" && r.months >= 12) return false;
+    if(af==="gte12" && r.months < 12) return false;
+    return true;
+  });
+
+  const html = `
+  <!doctype html>
+  <html lang="tr">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Proje Çanakkale – Rapor</title>
+    <style>
+      body{font-family:Arial, sans-serif; padding:24px; color:#111}
+      h1{margin:0}
+      .sub{color:#555; margin:6px 0 18px 0}
+      table{width:100%; border-collapse:collapse; margin-top:12px}
+      th,td{border:1px solid #ddd; padding:8px; font-size:12px; text-align:left; vertical-align:top}
+      th{background:#f3f4f6}
+      .small{font-size:11px;color:#555}
+      .ok{color:#065f46;font-weight:700}
+      .bad{color:#7f1d1d;font-weight:700}
+      @media print { button{display:none} }
+    </style>
+  </head>
+  <body>
+    <h1>Proje Çanakkale – Devlet Gözlem Raporu</h1>
+    <div class="sub">
+      Oluşturma: ${new Date().toLocaleString("tr-TR")}<br>
+      Kriterler: ${sf || "Tüm Durumlar"} / ${af || "Tüm Süreler"} / Arama: ${(document.getElementById("q").value || "-")}
+    </div>
+
+    <button onclick="window.print()">Yazdır / PDF olarak kaydet</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Referans</th>
+          <th>Hash</th>
+          <th>Üretici</th>
+          <th>Ürün</th>
+          <th>Parti</th>
+          <th>Ay</th>
+          <th>Durum</th>
+          <th>Finalizasyon</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(r=>`
+          <tr>
+            <td><strong>${r.ref}</strong></td>
+            <td class="small">${r.hash}</td>
+            <td>${r.producer}<div class="small">${r.code}</div></td>
+            <td>${r.product}</td>
+            <td>${r.batch}</td>
+            <td>${r.months}</td>
+            <td class="${r.status==="Uygun"?"ok":"bad"}">${r.status}</td>
+            <td>${r.finalizedAt}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  </body>
+  </html>
+  `;
+
+  const w = window.open("", "_blank");
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+}
+
+/* -------------------------
+   7) INIT
+-------------------------- */
+// If someone opens State view later, table uses latest localStorage.
+// Also keep records fresh in case multiple tabs:
+window.addEventListener("storage", () => {
+  records = loadRecords();
+  if(document.getElementById("stateView").style.display !== "none"){
+    renderTable();
+  }
+});
+</script>
+
+</body>
+</html>
