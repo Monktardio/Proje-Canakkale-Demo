@@ -37,13 +37,19 @@
     padding:32px;
     box-shadow:var(--shadow);
   }
+
   h1{
     margin:0 0 6px 0;
     letter-spacing:-.2px;
     font-size:44px;
     line-height:1.05;
   }
-  .sub{color:var(--muted);margin:0 0 18px 0; font-size:16px; line-height:1.35}
+  .sub{
+    color:var(--muted);
+    margin:0 0 18px 0;
+    font-size:16px;
+    line-height:1.35
+  }
 
   label{display:block;margin-top:14px;font-weight:650}
 
@@ -57,6 +63,13 @@
     background:#fff;
     color:var(--text);
   }
+
+  /* ✅ 1) Placeholder ("Örn:") smaller everywhere */
+  input::placeholder{
+    font-size:12px;
+    color:#9ca3af;
+  }
+
   input[readonly]{background:#f3f4f6}
 
   .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -120,11 +133,9 @@
   .muted{color:var(--muted)}
   .actionsRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
 
-  /* Filters */
   .filters{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
   .filters input, .filters select{width:auto;min-width:220px}
 
-  /* Table */
   table{width:100%;border-collapse:collapse;margin-top:16px}
   th, td{padding:12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
   th{background:#f3f4f6}
@@ -132,7 +143,6 @@
   .status-ok{color:var(--ok);font-weight:800}
   .status-bad{color:var(--bad);font-weight:800}
 
-  /* Modal */
   .modal{
     position:fixed;inset:0;
     background:rgba(0,0,0,.42);
@@ -157,15 +167,9 @@
   .k{color:var(--muted);font-weight:650}
   .v{font-weight:650}
   .small{font-size:12px;color:var(--muted)}
-  .rightActions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-  }
+  .rightActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 
-  /* ✅ Date field: icon INSIDE input (neutral grey) */
+  /* Date input with icon inside */
   .dateWrap{position:relative;margin-top:6px;}
   .dateWrap input[type="text"]{margin-top:0;padding-right:44px}
   .dateIconBtn{
@@ -179,26 +183,21 @@
   .dateIconBtn svg{ width:18px;height:18px; stroke:var(--muted); }
   .hiddenDate{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
 
-  /* ✅ MOBILE FIXES */
+  /* ✅ Mobile layout */
   @media (max-width:820px){
     body{padding:18px}
     .card{padding:22px}
 
-    /* Header less huge */
     h1{font-size:34px; line-height:1.05}
     .sub{font-size:15px}
 
-    /* Topbar stacks nicely */
     .topbar{flex-direction:column; align-items:flex-start}
     .rightActions{width:100%; justify-content:flex-start}
-
-    /* Make pill + button feel compact */
     .pill{padding:9px 12px; max-width:100%}
 
-    /* Filters full width */
     .filters input, .filters select{min-width:0; width:100%}
 
-    /* ✅ Table becomes mobile "cards" (no horizontal scroll, no misalignment) */
+    /* Table -> cards */
     table thead{display:none}
     table, tbody, tr, td{display:block; width:100%}
     tr{
@@ -220,10 +219,29 @@
     td:last-child{border-bottom:none}
     td::before{
       content: attr(data-label);
-      flex:0 0 40%;
-      max-width:40%;
+      flex:0 0 38%;
+      max-width:38%;
       font-weight:800;
       color:var(--muted);
+    }
+
+    /* ✅ 3) Referans single-line, hash on 2nd line (mobile cards) */
+    .refLine{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 210px;
+    }
+    .hashLine{
+      display:block;
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 210px;
     }
   }
 
@@ -319,6 +337,7 @@
 
   <div class="row">
     <div>
+      <!-- ✅ 2) remove (gg.aa.yyyy) from label -->
       <label>Üretim Tarihi</label>
       <div class="dateWrap">
         <input
@@ -343,6 +362,7 @@
     </div>
 
     <div>
+      <!-- ✅ 2) remove (gg.aa.yyyy) from label -->
       <label>Paketleme Tarihi</label>
       <div class="dateWrap">
         <input
@@ -375,7 +395,6 @@
   </div>
 
   <button class="btn-danger" id="finalizeBtn" onclick="finalizeRecord()">Paketleme tamamla</button>
-
   <div id="producerResult"></div>
 </div>
 
@@ -450,7 +469,7 @@ const USERS = [
   { code:"TR-17-001", pw:"Ezine",  role:"producer", name:"Proje Canakkale" },
   { code:"DEVLET",    pw:"Devlet", role:"state",    name:"Tarım ve Gıda Otoritesi" }
 ];
-const STORE_KEY = "pc_demo_records_v5";
+const STORE_KEY = "pc_demo_records_v6";
 let currentUser = null;
 let records = loadRecords();
 
@@ -691,7 +710,10 @@ function renderTable(){
     tr.onclick = () => openDetailModal(r);
 
     tr.innerHTML = `
-      <td data-label="Referans"><strong>${r.ref}</strong><div class="small">${r.hash}</div></td>
+      <td data-label="Referans">
+        <span class="refLine"><strong>${r.ref}</strong></span>
+        <span class="hashLine">${r.hash}</span>
+      </td>
       <td data-label="Üretici">${r.producer}<div class="small">${r.code}</div></td>
       <td data-label="Ürün">${r.product}</td>
       <td data-label="Parti">${r.batch}</td>
