@@ -674,10 +674,9 @@ function renderTable(){
         </div>
       </td>
 
-      <td data-label="Üretici">
-        <span class="valueOneLine">${r.producer}</span>
-        <div class="small valueOneLine" style="text-align:right">${r.code}</div>
-      </td>
+     <td data-label="Üretici">
+  <span class="valueOneLine">${r.producer} <span class="small">(${r.code})</span></span>
+</td>
 
       <td data-label="Ürün"><span class="valueOneLine">${r.product}</span></td>
       <td data-label="Parti"><span class="valueOneLine">${r.batch}</span></td>
