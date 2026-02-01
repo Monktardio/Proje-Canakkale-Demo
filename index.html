@@ -21,14 +21,25 @@
     --shadow:0 10px 30px rgba(0,0,0,.08);
     --radius:16px;
   }
+
   *{box-sizing:border-box}
+
+  /* ✅ MOBILE SCROLL SAFETY */
+  html, body{
+    height:100%;
+    overflow-x:hidden;
+  }
   body{
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     background:var(--bg);
     margin:0;
     padding:40px;
     color:var(--text);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    touch-action: pan-y;
   }
+
   .card{
     max-width:1100px;
     margin:0 auto 18px auto;
@@ -123,14 +134,19 @@
   .status-ok{color:var(--ok);font-weight:800}
   .status-bad{color:var(--bad);font-weight:800}
 
+  /* ✅ MODAL SCROLL FIX (Android/Chrome safe) */
   .modal{
-    position:fixed;inset:0;
+    position:fixed;
+    inset:0;
     background:rgba(0,0,0,.42);
     display:none;
-    align-items:center;
+    align-items:flex-start;     /* not center */
     justify-content:center;
     padding:18px;
     z-index:50;
+    overflow:auto;              /* allow scroll in overlay */
+    -webkit-overflow-scrolling:touch;
+    touch-action: pan-y;
   }
   .modalContent{
     background:#fff;
@@ -139,6 +155,9 @@
     border-radius:16px;
     padding:22px;
     box-shadow:0 20px 50px rgba(0,0,0,.18);
+    max-height:calc(100vh - 36px);
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .modalHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   .modalHeader h2{margin:0}
@@ -183,6 +202,7 @@
       margin-top:12px;
       overflow:hidden;
       background:#fff;
+      touch-action: pan-y;
     }
     tr:hover{background:#fff}
 
@@ -193,6 +213,7 @@
       gap:12px;
       padding:10px 12px;
       border-bottom:1px solid var(--line);
+      touch-action: pan-y;
     }
     td:last-child{border-bottom:none}
     td::before{
@@ -509,8 +530,8 @@
 
   <div class="actionsRow">
     <button class="btn-ghost btn-inline" onclick="exportCSV()">CSV Dışa Aktar</button>
-    <button class="btn-ghost btn-inline" onclick="openPrintView()">PDF (Yazdır) – Simülasyon</button>
-    <span class="small">PDF için: Yazdır penceresinde “PDF olarak kaydet”.</span>
+    <button class="btn-ghost btn-inline" onclick="exportPDF()">PDF İndir (Otomatik)</button>
+    <span class="small">PDF: tek tık ile indir.</span>
   </div>
 
   <table>
@@ -539,6 +560,10 @@
   <div class="modalContent" id="modalContent"></div>
 </div>
 
+<!-- ✅ PDF libs for direct download -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
+
 <script>
 /* USERS */
 const USERS = [
@@ -547,7 +572,7 @@ const USERS = [
 ];
 
 /* STORAGE */
-const STORE_KEY = "pc_demo_records_rules_v1";
+const STORE_KEY = "pc_demo_records_rules_v2";
 let currentUser = null;
 let records = loadRecords();
 
@@ -561,8 +586,7 @@ function demoHash(str){
   return ("0000000" + h.toString(16)).slice(-8).toUpperCase();
 }
 function pad4(n){ return String(n).padStart(4,"0"); }
-function buildReference({code, batch, finalizedAt}){
-  const year = (finalizedAt && finalizedAt.slice(-4)) ? finalizedAt.slice(-4) : String(new Date().getFullYear());
+function buildReference({code, batch, year}){
   const short = code.replace("TR-","").replaceAll("-","");
   const seed = demoHash(code + "|" + batch + "|" + year);
   const seq = parseInt(seed.slice(-3), 16) % 10000;
@@ -651,8 +675,6 @@ function calcMonths(){
     document.getElementById("pMonths").value = "";
     return null;
   }
-
-  // rough month diff (same logic as earlier demo)
   const months = Math.floor((pack - prod) / (1000*60*60*24*30));
   document.getElementById("pMonths").value = months;
   return months;
@@ -670,33 +692,24 @@ function calcMilkTotal(){
 }
 
 function evaluateRules(form){
-  // form: values already normalized
   const reasonsBad = [];
   const reasonsOk = [];
 
-  // A) Milk rules
   if(Number.isFinite(form.sheep)){
     if(form.sheep >= 35 && form.sheep <= 45) reasonsOk.push("Koyun sütü oranı %35–%45 aralığında.");
     else reasonsBad.push("Koyun sütü oranı %35–%45 aralığı dışında.");
-  } else {
-    reasonsBad.push("Koyun sütü oranı girilmedi.");
-  }
+  } else reasonsBad.push("Koyun sütü oranı girilmedi.");
 
   if(Number.isFinite(form.goat)){
     if(form.goat >= 40) reasonsOk.push("Keçi sütü oranı minimum %40 şartını karşılıyor.");
     else reasonsBad.push("Keçi sütü oranı minimum %40 şartını karşılamıyor.");
-  } else {
-    reasonsBad.push("Keçi sütü oranı girilmedi.");
-  }
+  } else reasonsBad.push("Keçi sütü oranı girilmedi.");
 
   if(Number.isFinite(form.cow)){
     if(form.cow <= 25) reasonsOk.push("İnek sütü oranı maksimum %25 sınırını aşmıyor.");
     else reasonsBad.push("İnek sütü oranı maksimum %25 sınırını aşıyor.");
-  } else {
-    reasonsBad.push("İnek sütü oranı girilmedi.");
-  }
+  } else reasonsBad.push("İnek sütü oranı girilmedi.");
 
-  // Optional total warning (not status decisive)
   let totalWarning = null;
   if(form.milkAny){
     if(Math.round(form.total) !== 100){
@@ -704,25 +717,20 @@ function evaluateRules(form){
     }
   }
 
-  // B) Date consistency
   if(form.prodDate && form.packDate){
     if(form.packDate < form.prodDate){
       reasonsBad.push("Paketleme tarihi, üretim tarihinden önce olamaz.");
     }
   }
 
-  // C) Season
   const seasonOk = isSeasonOk(form.prodDateTR);
   if(seasonOk === true) reasonsOk.push("Üretim tarihi izin verilen üretim sezonu içerisindedir (Mart–Ağustos).");
   else if(seasonOk === false) reasonsBad.push("Üretim tarihi izin verilen üretim sezonu dışındadır (Mart–Ağustos).");
 
-  // D) Maturation months >= 8
   if(Number.isFinite(form.months)){
     if(form.months >= 8) reasonsOk.push("Olgunlaşma süresi minimum 8 ay şartını karşılıyor.");
     else reasonsBad.push("Olgunlaşma süresi minimum 8 ay şartını karşılamıyor.");
-  } else {
-    reasonsBad.push("Olgunlaşma süresi hesaplanamadı (tarihler eksik/yanlış).");
-  }
+  } else reasonsBad.push("Olgunlaşma süresi hesaplanamadı (tarihler eksik/yanlış).");
 
   const status = reasonsBad.length ? "Uygunsuz" : "Uygun";
   return { status, reasonsBad, reasonsOk, totalWarning, seasonOk };
@@ -730,9 +738,7 @@ function evaluateRules(form){
 
 /* LIVE chips (producer) */
 function refreshLiveRules(){
-  calcMilkTotal();
   const months = calcMonths();
-
   const prodTR = document.getElementById("pProdDateText").value;
   const packTR = document.getElementById("pPackDateText").value;
 
@@ -757,32 +763,16 @@ function refreshLiveRules(){
   });
 
   const chips = [];
+  if(Number.isFinite(sheep)) chips.push({ ok:(sheep>=35 && sheep<=45), t:`Koyun %35–45 (${sheep}%)` });
+  if(Number.isFinite(goat))  chips.push({ ok:(goat>=40), t:`Keçi ≥%40 (${goat}%)` });
+  if(Number.isFinite(cow))   chips.push({ ok:(cow<=25), t:`İnek ≤%25 (${cow}%)` });
+  if(Number.isFinite(months)) chips.push({ ok:(months>=8), t:`Olgunlaşma ≥8 ay (${months})` });
 
-  // sheep
-  if(Number.isFinite(sheep)){
-    chips.push({ ok:(sheep>=35 && sheep<=45), t:`Koyun %35–45 (${sheep}%)` });
-  }
-  // goat
-  if(Number.isFinite(goat)){
-    chips.push({ ok:(goat>=40), t:`Keçi ≥%40 (${goat}%)` });
-  }
-  // cow
-  if(Number.isFinite(cow)){
-    chips.push({ ok:(cow<=25), t:`İnek ≤%25 (${cow}%)` });
-  }
-  // months
-  if(Number.isFinite(months)){
-    chips.push({ ok:(months>=8), t:`Olgunlaşma ≥8 ay (${months})` });
-  }
-  // season
   const seasonOk = isSeasonOk(prodTR);
   if(seasonOk === true) chips.push({ ok:true, t:`Sezon: Mart–Ağustos` });
   else if(seasonOk === false) chips.push({ ok:false, t:`Sezon dışı` });
 
-  // total warning chip (neutral -> treat as bad chip but it’s a warning)
-  if(res.totalWarning){
-    chips.push({ ok:false, t:`Uyarı: Toplam %${Math.round(milk.total)}` });
-  }
+  if(res.totalWarning) chips.push({ ok:false, t:`Uyarı: Toplam %${Math.round(milk.total)}` });
 
   const el = document.getElementById("liveChips");
   el.innerHTML = chips.map(c => `<span class="chip ${c.ok?'ok':'bad'}">${c.ok?'✅':'❌'} ${c.t}</span>`).join("");
@@ -814,6 +804,7 @@ function logout(){
   document.getElementById("loginPw").value = "";
   document.getElementById("producerView").style.display = "none";
   document.getElementById("stateView").style.display = "none";
+  closeModal();
   document.getElementById("loginView").style.display = "block";
 }
 
@@ -821,8 +812,8 @@ function logout(){
 function makeRecord(data){
   const payload = JSON.stringify(data);
   const hash = demoHash(payload);
-  const ref = buildReference({code:data.code, batch:data.batch, finalizedAt:data.finalizedAt});
-
+  const year = (data.prodDate && data.prodDate.includes(".")) ? data.prodDate.split(".")[2] : String(new Date().getFullYear());
+  const ref = buildReference({code:data.code, batch:data.batch, year});
   return { ...data, ref, hash };
 }
 
@@ -832,11 +823,10 @@ function loadRecords(){
   if(raw){
     try{
       const arr = JSON.parse(raw);
-      if(Array.isArray(arr) && arr.length) return arr;
+      if(Array.isArray(arr)) return arr;
     }catch{}
   }
 
-  // Seed examples (different producers)
   const seededRaw = [
     {
       producer:"Proje Canakkale", code:"TR-17-001",
@@ -854,10 +844,10 @@ function loadRecords(){
       product:"Tulum Peyniri", batch:"KD-2026-03",
       place:"Bayramiç / Çanakkale",
       stt:"10.02.2027",
-      prodDate:"10.09.2026",         // season out
+      prodDate:"10.09.2026",
       packDate:"12.04.2027",
       sheep:40, goat:41, cow:19,
-      months:7,                      // <8
+      months:7,
       finalizedAt:"12.04.2027 09:10",
     },
     {
@@ -867,7 +857,7 @@ function loadRecords(){
       stt:"01.01.2027",
       prodDate:"05.05.2026",
       packDate:"05.02.2027",
-      sheep:50, goat:40, cow:10,     // sheep out range
+      sheep:50, goat:40, cow:10,
       months:9,
       finalizedAt:"05.02.2027 15:44",
     },
@@ -885,6 +875,9 @@ function loadRecords(){
   ];
 
   const seeded = seededRaw.map(x => {
+    const totalMilk = (Number.isFinite(x.sheep) && Number.isFinite(x.goat) && Number.isFinite(x.cow))
+      ? (x.sheep + x.goat + x.cow) : null;
+
     const res = evaluateRules({
       prodDateTR: x.prodDate,
       prodDate: parseFlexibleDate(x.prodDate),
@@ -893,12 +886,13 @@ function loadRecords(){
       sheep: x.sheep,
       goat: x.goat,
       cow: x.cow,
-      total: x.sheep + x.goat + x.cow,
+      total: totalMilk ?? 0,
       milkAny: true
     });
 
     return makeRecord({
       ...x,
+      totalMilk,
       status: res.status,
       reasonsBad: res.reasonsBad,
       reasonsOk: res.reasonsOk,
@@ -923,7 +917,6 @@ function lockProducerInputs(locked){
     const el = document.getElementById(id);
     if(!el) return;
     el.readOnly = locked;
-    // number inputs don't fully obey readOnly in some browsers; use disabled if locked
     if(el.type === "number") el.disabled = locked;
   });
 
@@ -1000,9 +993,7 @@ function finalizeRecord(){
     prodDate,
     packDate,
     months,
-    sheep,
-    goat,
-    cow,
+    sheep, goat, cow,
     total: milk.total,
     milkAny: true
   });
@@ -1083,7 +1074,6 @@ function renderTable(){
     const tr = document.createElement("tr");
     tr.onclick = () => openDetailModal(r);
 
-    // Mobile uses data-label; desktop uses columns
     tr.innerHTML = `
       <td data-label="Referans">
         <div class="stackRight">
@@ -1123,6 +1113,7 @@ function openModalByRef(ref){
   const r = records.find(x => x.ref === ref);
   if(r) openDetailModal(r);
 }
+
 function openDetailModal(r){
   document.getElementById("modal").style.display = "flex";
   const statusClass = r.status === "Uygun" ? "ok" : "bad";
@@ -1138,6 +1129,10 @@ function openDetailModal(r){
   const warn = r.totalWarning
     ? `<div class="small" style="margin-top:10px">⚠️ ${escapeHtml(r.totalWarning)}</div>`
     : "";
+
+  const totalMilk = Number.isFinite(r.totalMilk)
+    ? r.totalMilk
+    : (Number.isFinite(r.sheep)&&Number.isFinite(r.goat)&&Number.isFinite(r.cow) ? (r.sheep+r.goat+r.cow) : null);
 
   document.getElementById("modalContent").innerHTML = `
     <div class="modalHeader">
@@ -1169,7 +1164,8 @@ function openDetailModal(r){
       <div class="k">Üretim Tarihi</div><div class="v">${escapeHtml(r.prodDate || "-")}</div>
       <div class="k">Paketleme Tarihi</div><div class="v">${escapeHtml(r.packDate || "-")}</div>
       <div class="k">STT</div><div class="v">${escapeHtml(r.stt || "-")}</div>
-      <div class="k">Süt Oranları</div><div class="v">Koyun: ${safeNum(r.sheep)}% • Keçi: ${safeNum(r.goat)}% • İnek: ${safeNum(r.cow)}% (Toplam: ${safeNum(r.totalMilk)}%)</div>
+      <div class="k">Süt Oranları</div>
+      <div class="v">Koyun: ${safeNum(r.sheep)}% • Keçi: ${safeNum(r.goat)}% • İnek: ${safeNum(r.cow)}% (Toplam: ${totalMilk==null?"-":totalMilk}%)</div>
       <div class="k">Finalizasyon</div><div class="v">${escapeHtml(r.finalizedAt || "-")}</div>
     </div>
 
@@ -1185,7 +1181,7 @@ function openDetailModal(r){
 }
 function closeModal(){ document.getElementById("modal").style.display = "none"; }
 
-/* EXPORTS */
+/* EXPORT CSV */
 function exportCSV(){
   const q = (document.getElementById("q")?.value || "").toLowerCase();
   const sf = document.getElementById("statusFilter")?.value || "";
@@ -1210,11 +1206,12 @@ function exportCSV(){
 
     const nedenler = (r.reasonsBad && r.reasonsBad.length) ? r.reasonsBad.join(" | ") : "—";
     const sezonTxt = (r.seasonOk===true?"Mart–Ağustos":(r.seasonOk===false?"Sezon dışı":"-"));
+    const totalMilk = Number.isFinite(r.totalMilk) ? r.totalMilk : (Number.isFinite(r.sheep)&&Number.isFinite(r.goat)&&Number.isFinite(r.cow) ? (r.sheep+r.goat+r.cow) : "");
 
     rows.push([
       r.ref, r.hash, r.producer, r.code, r.product, r.batch, r.place,
       r.prodDate, r.packDate, r.stt,
-      r.sheep, r.goat, r.cow, r.totalMilk, r.months, sezonTxt, r.status, nedenler, r.finalizedAt
+      r.sheep, r.goat, r.cow, totalMilk, r.months, sezonTxt, r.status, nedenler, r.finalizedAt
     ]);
   });
 
@@ -1235,7 +1232,15 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 
-function openPrintView(){
+/* ✅ EXPORT PDF (direct download) */
+function exportPDF(){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    alert("PDF kütüphanesi yüklenemedi. Lütfen internet bağlantısını kontrol edin.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"pt", format:"a4" });
+
   const q = (document.getElementById("q")?.value || "").toLowerCase();
   const sf = document.getElementById("statusFilter")?.value || "";
   const af = document.getElementById("ageFilter")?.value || "";
@@ -1252,71 +1257,38 @@ function openPrintView(){
     return true;
   });
 
-  const html = `
-  <!doctype html>
-  <html lang="tr">
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Proje Çanakkale – Rapor</title>
-    <style>
-      body{font-family:Arial, sans-serif; padding:24px; color:#111}
-      h1{margin:0}
-      .sub{color:#555; margin:6px 0 18px 0}
-      table{width:100%; border-collapse:collapse; margin-top:12px}
-      th,td{border:1px solid #ddd; padding:8px; font-size:11px; text-align:left; vertical-align:top}
-      th{background:#f3f4f6}
-      .ok{color:#065f46;font-weight:700}
-      .bad{color:#7f1d1d;font-weight:700}
-      @media print { button{display:none} }
-    </style>
-  </head>
-  <body>
-    <h1>Proje Çanakkale – Devlet İzleme Raporu</h1>
-    <div class="sub">
-      Oluşturma: ${new Date().toLocaleString("tr-TR")}<br>
-      Kriterler: ${sf || "Tüm Durumlar"} / ${af || "Olgunlaşma (Tümü)"} / ${sez || "Sezon (Tümü)"} / Arama: ${(document.getElementById("q").value || "-")}
-    </div>
+  doc.setFontSize(14);
+  doc.text("Proje Çanakkale – Devlet İzleme Raporu", 40, 40);
+  doc.setFontSize(10);
+  doc.text(`Oluşturma: ${new Date().toLocaleString("tr-TR")}`, 40, 58);
 
-    <button onclick="window.print()">Yazdır / PDF olarak kaydet</button>
+  const head = [[ "Referans","Hash","Üretici","Kod","Ürün","Parti","Yer","Üretim","STT","Ay","Durum" ]];
+  const body = filtered.map(r=>[
+    r.ref,
+    r.hash,
+    r.producer,
+    r.code,
+    r.product,
+    r.batch,
+    r.place || "-",
+    r.prodDate || "-",
+    r.stt || "-",
+    (Number.isFinite(r.months)? r.months : "-"),
+    r.status
+  ]);
 
-    <table>
-      <thead>
-        <tr>
-          <th>Referans</th><th>Üretici</th><th>Ürün</th><th>Parti</th><th>Yer</th><th>Üretim</th><th>STT</th><th>Ay</th><th>Durum</th><th>Nedenler</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(r=>{
-          const neden = (r.reasonsBad && r.reasonsBad.length) ? r.reasonsBad.join(" • ") : "—";
-          return `
-          <tr>
-            <td><strong>${escapeHtml(r.ref)}</strong><br><span style="color:#666">${escapeHtml(r.hash)}</span></td>
-            <td>${escapeHtml(r.producer)}<br><span style="color:#666">${escapeHtml(r.code)}</span></td>
-            <td>${escapeHtml(r.product)}</td>
-            <td>${escapeHtml(r.batch)}</td>
-            <td>${escapeHtml(r.place||"-")}</td>
-            <td>${escapeHtml(r.prodDate||"-")}</td>
-            <td>${escapeHtml(r.stt||"-")}</td>
-            <td>${Number.isFinite(r.months)?r.months:"-"}</td>
-            <td class="${r.status==="Uygun"?"ok":"bad"}">${escapeHtml(r.status)}</td>
-            <td>${escapeHtml(neden)}</td>
-          </tr>`;
-        }).join("")}
-      </tbody>
-    </table>
-  </body>
-  </html>
-  `;
-  const w = window.open("", "_blank");
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  w.focus();
+  doc.autoTable({
+    head,
+    body,
+    startY: 72,
+    styles: { fontSize: 8, cellPadding: 3 },
+    headStyles: { fillColor: [243,244,246] }
+  });
+
+  doc.save(`proje_canakkale_rapor_${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
 /* helpers */
-function refreshLiveRulesSafe(){ try{ refreshLiveRules(); }catch{} }
 function safeNum(n){ return Number.isFinite(n) ? n : "-"; }
 function escapeHtml(s){
   return String(s ?? "")
@@ -1333,12 +1305,6 @@ window.addEventListener("storage", () => {
   if(document.getElementById("stateView").style.display !== "none"){
     renderTable();
   }
-});
-
-/* on load: set empty chips */
-function refreshLiveRules(){ /* defined above */ }
-document.addEventListener("DOMContentLoaded", () => {
-  // noop
 });
 </script>
 
