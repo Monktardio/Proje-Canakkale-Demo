@@ -23,12 +23,7 @@
   }
 
   *{box-sizing:border-box}
-
-  /* ✅ MOBILE SCROLL SAFETY */
-  html, body{
-    height:100%;
-    overflow-x:hidden;
-  }
+  html, body{height:100%; overflow-x:hidden;}
   body{
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     background:var(--bg);
@@ -48,6 +43,7 @@
     padding:32px;
     box-shadow:var(--shadow);
   }
+
   h1{margin:0 0 6px 0; letter-spacing:-.2px; font-size:44px; line-height:1.05;}
   .sub{color:var(--muted);margin:0 0 18px 0; font-size:16px; line-height:1.35}
   label{display:block;margin-top:14px;font-weight:650}
@@ -134,17 +130,16 @@
   .status-ok{color:var(--ok);font-weight:800}
   .status-bad{color:var(--bad);font-weight:800}
 
-  /* ✅ MODAL SCROLL FIX (Android/Chrome safe) */
   .modal{
     position:fixed;
     inset:0;
     background:rgba(0,0,0,.42);
     display:none;
-    align-items:flex-start;     /* not center */
+    align-items:flex-start;
     justify-content:center;
     padding:18px;
     z-index:50;
-    overflow:auto;              /* allow scroll in overlay */
+    overflow:auto;
     -webkit-overflow-scrolling:touch;
     touch-action: pan-y;
   }
@@ -167,7 +162,6 @@
   .k{color:var(--muted);font-weight:650}
   .v{font-weight:650}
 
-  /* Date input with icon inside */
   .dateWrap{position:relative;margin-top:6px;}
   .dateWrap input[type="text"]{margin-top:0;padding-right:44px}
   .dateIconBtn{
@@ -181,19 +175,16 @@
   .dateIconBtn svg{ width:18px;height:18px; stroke:var(--muted); }
   .hiddenDate{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
 
-  /* Mobile */
   @media (max-width:820px){
     body{padding:18px}
     .card{padding:22px}
     h1{font-size:34px; line-height:1.05}
     .sub{font-size:15px}
-
     .topbar{flex-direction:column; align-items:flex-start}
     .rightActions{width:100%; justify-content:flex-start}
     .pill{padding:9px 12px; max-width:100%}
     .filters input, .filters select{min-width:0; width:100%}
 
-    /* Table -> cards */
     table thead{display:none}
     table, tbody, tr, td{display:block; width:100%}
     tr{
@@ -306,7 +297,7 @@
   <div class="row">
     <div>
       <label>Kullanıcı Kodu</label>
-      <input id="loginCode" placeholder="Örn: TR-17-001 veya DEVLET" />
+      <input id="loginCode" placeholder="Örn: TR17001 veya DEVLET" />
     </div>
     <div>
       <label>Şifre</label>
@@ -317,8 +308,8 @@
   <button class="btn-primary" onclick="doLogin()">Giriş</button>
 
   <div class="note">
-    <strong>Login:</strong><br>
-    Üretici: <code>TR-17-001</code> / <code>Ezine</code><br>
+    <strong>Demo Login:</strong><br>
+    Üretici: <code>TR17001</code> / <code>Ezine</code> <span class="small">(TR-17-001 de çalışır)</span><br>
     Devlet: <code>DEVLET</code> / <code>Devlet</code>
   </div>
 </div>
@@ -367,37 +358,14 @@
     </div>
   </div>
 
+  <!-- ✅ FIX: Üretim Yeri + Üretim Tarihi aynı satır (boşluk yok) -->
   <div class="row">
     <div>
-      <label>Üretim Yeri (İlçe / Çanakkale)</label>
-      <input id="pPlace" placeholder="Örn: Ezine / Çanakkale" />
+      <label>Üretim Yeri (İlçe)</label>
+      <input id="pDistrict" placeholder="Örn: Ezine" />
+      <div class="small" style="margin-top:6px">İl otomatik: <strong>Çanakkale</strong> (kayıtta “İlçe / Çanakkale” olarak görünür).</div>
     </div>
-    <div>
-      <label>STT (Son Tüketim Tarihi)</label>
-      <div class="dateWrap">
-        <input
-          id="pSttText"
-          type="text"
-          inputmode="numeric"
-          placeholder="Örn: 02.03.2027"
-          maxlength="10"
-          oninput="handleDateTyping(this, 'pSttPicker');"
-          onblur="normalizeDateText(this, 'pSttPicker');"
-        />
-        <input class="hiddenDate" id="pSttPicker" type="date"
-               onchange="syncFromPicker('pSttPicker','pSttText');" />
-        <button type="button" class="dateIconBtn" onclick="openPicker('pSttPicker')" aria-label="Takvim">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-            <path d="M8 2v3M16 2v3"/>
-            <path d="M3 8h18"/>
-            <rect x="3" y="5" width="18" height="17" rx="2"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
 
-  <div class="row">
     <div>
       <label>Üretim Tarihi</label>
       <div class="dateWrap">
@@ -414,14 +382,15 @@
                onchange="syncFromPicker('pProdDatePicker','pProdDateText'); calcMonths(); refreshLiveRules();" />
         <button type="button" class="dateIconBtn" onclick="openPicker('pProdDatePicker')" aria-label="Takvim">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-            <path d="M8 2v3M16 2v3"/>
-            <path d="M3 8h18"/>
-            <rect x="3" y="5" width="18" height="17" rx="2"/>
+            <path d="M8 2v3M16 2v3"/><path d="M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/>
           </svg>
         </button>
       </div>
     </div>
+  </div>
 
+  <!-- ✅ FIX: Paketleme + STT artık bir Zeile (logisch) -->
+  <div class="row">
     <div>
       <label>Paketleme Tarihi</label>
       <div class="dateWrap">
@@ -438,13 +407,41 @@
                onchange="syncFromPicker('pPackDatePicker','pPackDateText'); calcMonths(); refreshLiveRules();" />
         <button type="button" class="dateIconBtn" onclick="openPicker('pPackDatePicker')" aria-label="Takvim">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-            <path d="M8 2v3M16 2v3"/>
-            <path d="M3 8h18"/>
-            <rect x="3" y="5" width="18" height="17" rx="2"/>
+            <path d="M8 2v3M16 2v3"/><path d="M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/>
           </svg>
         </button>
       </div>
     </div>
+
+    <div>
+      <label>STT (Son Tüketim Tarihi)</label>
+      <div class="dateWrap">
+        <input
+          id="pSttText"
+          type="text"
+          inputmode="numeric"
+          placeholder="Örn: 02.03.2027"
+          maxlength="10"
+          oninput="handleDateTyping(this, 'pSttPicker');"
+          onblur="normalizeDateText(this, 'pSttPicker');"
+        />
+        <input class="hiddenDate" id="pSttPicker" type="date"
+               onchange="syncFromPicker('pSttPicker','pSttText');" />
+        <button type="button" class="dateIconBtn" onclick="openPicker('pSttPicker')" aria-label="Takvim">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M8 2v3M16 2v3"/><path d="M3 8h18"/><rect x="3" y="5" width="18" height="17" rx="2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Olgunlaşma Süresi (ay)</label>
+      <input id="pMonths" readonly placeholder="Tarihlerden otomatik hesaplanır" />
+    </div>
+    <div></div>
   </div>
 
   <div class="row3">
@@ -462,15 +459,15 @@
     </div>
   </div>
 
-  <div class="row">
-    <div>
-      <label>Olgunlaşma Süresi (ay)</label>
-      <input id="pMonths" readonly placeholder="Tarihlerden otomatik hesaplanır" />
-    </div>
+  <div class="row" style="margin-top:2px">
     <div>
       <label>Toplam Süt Oranı (%)</label>
       <input id="pTotalMilk" readonly placeholder="Koyun + Keçi + İnek" />
+      <div id="milkTotalWarn" class="small" style="display:none; margin-top:6px; color: var(--danger); font-weight:800;">
+        Toplam %100 olmalı.
+      </div>
     </div>
+    <div></div>
   </div>
 
   <div class="note">
@@ -530,23 +527,25 @@
 
   <div class="actionsRow">
     <button class="btn-ghost btn-inline" onclick="exportCSV()">CSV Dışa Aktar</button>
-    <button class="btn-ghost btn-inline" onclick="exportPDF()">PDF İndir (Otomatik)</button>
-    <span class="small">PDF: tek tık ile indir.</span>
+    <button class="btn-ghost btn-inline" onclick="exportPDF()">PDF İndir</button>
+    <button class="btn-ghost btn-inline" onclick="printFallback()">PDF (Yazdır)</button>
+    <span class="small">PDF İndir: tek tık. Olmazsa “Yazdır → PDF”.</span>
   </div>
 
   <table>
     <thead>
       <tr>
         <th>Referans</th>
+        <th>Hash</th>
         <th>Üretici</th>
+        <th>Kod</th>
         <th>Ürün</th>
         <th>Parti</th>
-        <th>Üretim Yeri</th>
+        <th>Yer</th>
         <th>Üretim</th>
         <th>STT</th>
         <th>Ay</th>
         <th>Durum</th>
-        <th>Finalizasyon</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
@@ -555,24 +554,25 @@
   <p class="small muted" id="countInfo"></p>
 </div>
 
-<!-- DETAIL MODAL -->
 <div class="modal" id="modal" onclick="if(event.target.id==='modal') closeModal()">
   <div class="modalContent" id="modalContent"></div>
 </div>
 
-<!-- ✅ PDF libs for direct download -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  window.__pdfReady = false;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" onload="window.__pdfReady=true"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 /* USERS */
 const USERS = [
   { code:"TR-17-001", pw:"Ezine",  role:"producer", name:"Proje Canakkale" },
+  { code:"TR17001",   pw:"Ezine",  role:"producer", name:"Proje Canakkale" },
   { code:"DEVLET",    pw:"Devlet", role:"state",    name:"Tarım ve Gıda Otoritesi" }
 ];
 
-/* STORAGE */
-const STORE_KEY = "pc_demo_records_rules_v2";
+const STORE_KEY = "pc_demo_records_rules_v4";
 let currentUser = null;
 let records = loadRecords();
 
@@ -586,14 +586,20 @@ function demoHash(str){
   return ("0000000" + h.toString(16)).slice(-8).toUpperCase();
 }
 function pad4(n){ return String(n).padStart(4,"0"); }
+function normCodeForRef(code){
+  const c = String(code||"").toUpperCase();
+  if(c === "TR17001") return "TR-17-001";
+  return c;
+}
 function buildReference({code, batch, year}){
-  const short = code.replace("TR-","").replaceAll("-","");
-  const seed = demoHash(code + "|" + batch + "|" + year);
+  const canonical = normCodeForRef(code);
+  const short = canonical.replace("TR-","").replaceAll("-","");
+  const seed = demoHash(canonical + "|" + batch + "|" + year);
   const seq = parseInt(seed.slice(-3), 16) % 10000;
   return `PC-${short}-${year}-${pad4(seq)}`;
 }
 
-/* DATE helpers */
+/* DATE */
 function openPicker(pickerId){
   const el = document.getElementById(pickerId);
   if(!el) return;
@@ -601,7 +607,7 @@ function openPicker(pickerId){
   else { el.focus(); el.click(); }
 }
 function handleDateTyping(textEl, pickerId){
-  let digits = textEl.value.replace(/\D/g,"").slice(0,8); // ddmmyyyy
+  let digits = textEl.value.replace(/\D/g,"").slice(0,8);
   let out = "";
   if(digits.length <= 2) out = digits;
   else if(digits.length <= 4) out = digits.slice(0,2) + "." + digits.slice(2);
@@ -651,7 +657,7 @@ function toISODate(dt){
   return `${yy}-${mm}-${dd}`;
 }
 function syncFromPicker(pickerId, textId){
-  const p = document.getElementById(pickerId).value; // yyyy-mm-dd
+  const p = document.getElementById(pickerId).value;
   const dt = parseFlexibleDate(p);
   if(dt) document.getElementById(textId).value = toTRDate(dt);
 }
@@ -659,18 +665,16 @@ function syncFromPicker(pickerId, textId){
 /* RULES */
 function monthFromTR(trDate){
   const dt = parseFlexibleDate(trDate);
-  return dt ? (dt.getMonth()+1) : null; // 1..12
+  return dt ? (dt.getMonth()+1) : null;
 }
 function isSeasonOk(prodTR){
   const m = monthFromTR(prodTR);
   if(m == null) return null;
   return (m >= 3 && m <= 8);
 }
-
 function calcMonths(){
   const prod = parseFlexibleDate(document.getElementById("pProdDateText").value);
   const pack = parseFlexibleDate(document.getElementById("pPackDateText").value);
-
   if(!prod || !pack){
     document.getElementById("pMonths").value = "";
     return null;
@@ -680,14 +684,28 @@ function calcMonths(){
   return months;
 }
 
+/* total milk + inline warning */
 function calcMilkTotal(){
   const s = parseFloat(document.getElementById("pSheep").value);
   const g = parseFloat(document.getElementById("pGoat").value);
   const c = parseFloat(document.getElementById("pCow").value);
+
   const vals = [s,g,c].map(v => Number.isFinite(v) ? v : 0);
   const any = [s,g,c].some(v => Number.isFinite(v));
-  const total = vals[0]+vals[1]+vals[2];
-  document.getElementById("pTotalMilk").value = any ? total : "";
+  const total = vals[0] + vals[1] + vals[2];
+
+  const totalEl = document.getElementById("pTotalMilk");
+  const warnEl  = document.getElementById("milkTotalWarn");
+
+  totalEl.value = any ? total : "";
+
+  const allFilled = [s,g,c].every(v => Number.isFinite(v));
+  if(allFilled && Math.round(total) !== 100){
+    warnEl.style.display = "block";
+  }else{
+    warnEl.style.display = "none";
+  }
+
   return {s, g, c, total, any};
 }
 
@@ -736,7 +754,7 @@ function evaluateRules(form){
   return { status, reasonsBad, reasonsOk, totalWarning, seasonOk };
 }
 
-/* LIVE chips (producer) */
+/* live chips */
 function refreshLiveRules(){
   const months = calcMonths();
   const prodTR = document.getElementById("pProdDateText").value;
@@ -775,13 +793,14 @@ function refreshLiveRules(){
   if(res.totalWarning) chips.push({ ok:false, t:`Uyarı: Toplam %${Math.round(milk.total)}` });
 
   const el = document.getElementById("liveChips");
-  el.innerHTML = chips.map(c => `<span class="chip ${c.ok?'ok':'bad'}">${c.ok?'✅':'❌'} ${c.t}</span>`).join("");
+  el.innerHTML = chips.map(c => `<span class="chip ${c.ok?'ok':'bad'}">${c.ok?'✅':'❌'} ${escapeHtml(c.t)}</span>`).join("");
 }
 
 /* AUTH */
 function doLogin(){
-  const c = document.getElementById("loginCode").value.trim();
+  const c = document.getElementById("loginCode").value.trim().toUpperCase();
   const p = document.getElementById("loginPw").value;
+
   const u = USERS.find(x => x.code === c && x.pw === p);
   if(!u){ alert("Hatalı giriş"); return; }
   currentUser = u;
@@ -790,7 +809,7 @@ function doLogin(){
   if(u.role === "producer"){
     document.getElementById("producerView").style.display = "block";
     document.getElementById("pName").value = u.name;
-    document.getElementById("pCode").value = u.code;
+    document.getElementById("pCode").value = (u.code === "TR17001") ? "TR-17-001" : u.code;
     document.getElementById("producerNamePill").textContent = u.name;
     resetProducerForm();
   }else{
@@ -808,7 +827,7 @@ function logout(){
   document.getElementById("loginView").style.display = "block";
 }
 
-/* RECORD MODEL */
+/* RECORDS */
 function makeRecord(data){
   const payload = JSON.stringify(data);
   const hash = demoHash(payload);
@@ -816,68 +835,40 @@ function makeRecord(data){
   const ref = buildReference({code:data.code, batch:data.batch, year});
   return { ...data, ref, hash };
 }
+function saveRecords(){ localStorage.setItem(STORE_KEY, JSON.stringify(records)); }
 
-/* STORAGE load/save with seeds */
 function loadRecords(){
   const raw = localStorage.getItem(STORE_KEY);
+  let arr = null;
   if(raw){
     try{
-      const arr = JSON.parse(raw);
-      if(Array.isArray(arr)) return arr;
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)) arr = parsed;
     }catch{}
   }
+  if(!arr) arr = [];
 
-  const seededRaw = [
-    {
-      producer:"Proje Canakkale", code:"TR-17-001",
-      product:"Ezine Peyniri", batch:"EZ-2026-01",
-      place:"Ezine / Çanakkale",
-      stt:"02.03.2027",
-      prodDate:"15.03.2026",
-      packDate:"20.12.2026",
-      sheep:40, goat:42, cow:18,
-      months:9,
-      finalizedAt:"20.12.2026 10:32",
-    },
-    {
-      producer:"Kazdağı Mandıra", code:"TR-17-002",
-      product:"Tulum Peyniri", batch:"KD-2026-03",
-      place:"Bayramiç / Çanakkale",
-      stt:"10.02.2027",
-      prodDate:"10.09.2026",
-      packDate:"12.04.2027",
-      sheep:40, goat:41, cow:19,
-      months:7,
-      finalizedAt:"12.04.2027 09:10",
-    },
-    {
-      producer:"Çanakkale Peynir Koop.", code:"TR-17-003",
-      product:"Beyaz Peynir", batch:"CK-2026-02",
-      place:"Merkez / Çanakkale",
-      stt:"01.01.2027",
-      prodDate:"05.05.2026",
-      packDate:"05.02.2027",
-      sheep:50, goat:40, cow:10,
-      months:9,
-      finalizedAt:"05.02.2027 15:44",
-    },
-    {
-      producer:"Gelibolu Süt Ürünleri", code:"TR-17-004",
-      product:"Koyun Peyniri", batch:"GL-2026-04",
-      place:"Gelibolu / Çanakkale",
-      stt:"18.03.2027",
-      prodDate:"01.08.2026",
-      packDate:"15.05.2027",
-      sheep:35, goat:44, cow:25,
-      months:9,
-      finalizedAt:"15.05.2027 11:05",
-    }
+  const seedRaw = [
+    { producer:"Proje Canakkale", code:"TR-17-001", product:"Ezine Peyniri", batch:"EZ-2026-01", place:"Ezine / Çanakkale", prodDate:"15.03.2026", packDate:"20.12.2026", stt:"02.03.2027", sheep:40, goat:42, cow:18, months:9, finalizedAt:"20.12.2026 10:32" },
+    { producer:"Kazdağı Mandıra", code:"TR-17-002", product:"Tulum Peyniri", batch:"KD-2026-03", place:"Bayramiç / Çanakkale", prodDate:"10.09.2026", packDate:"11.01.2027", stt:"10.02.2027", sheep:50, goat:35, cow:15, months:7, finalizedAt:"11.01.2027 09:10" }, /* sezon dışı + ay <8 */
+    { producer:"Çanakkale Peynir Koop.", code:"TR-17-003", product:"Beyaz Peynir", batch:"CK-2026-02", place:"Merkez / Çanakkale", prodDate:"08.04.2026", packDate:"08.12.2026", stt:"10.01.2027", sheep:34, goat:41, cow:25, months:8, finalizedAt:"08.12.2026 15:44" }, /* koyun düşük */
+    { producer:"Biga Süt Ürünleri", code:"TR-17-004", product:"Ezine Peyniri", batch:"BG-2026-04", place:"Biga / Çanakkale", prodDate:"01.03.2026", packDate:"05.12.2026", stt:"01.02.2027", sheep:45, goat:40, cow:15, months:9, finalizedAt:"05.12.2026 11:05" },
+    { producer:"Gelibolu Mandırası", code:"TR-17-005", product:"Ezine Peyniri", batch:"GL-2026-01", place:"Gelibolu / Çanakkale", prodDate:"20.06.2026", packDate:"25.02.2027", stt:"20.03.2027", sheep:36, goat:40, cow:24, months:8, finalizedAt:"25.02.2027 08:22" },
+    { producer:"Lapseki Çiftlik", code:"TR-17-006", product:"Tulum Peyniri", batch:"LP-2026-02", place:"Lapseki / Çanakkale", prodDate:"12.07.2026", packDate:"20.02.2027", stt:"10.03.2027", sheep:44, goat:39, cow:17, months:7, finalizedAt:"20.02.2027 10:40" }, /* keçi min 40 değil */
+    { producer:"Ayvacık Süt", code:"TR-17-007", product:"Beyaz Peynir", batch:"AY-2026-05", place:"Ayvacık / Çanakkale", prodDate:"05.05.2026", packDate:"06.01.2027", stt:"05.02.2027", sheep:42, goat:40, cow:18, months:8, finalizedAt:"06.01.2027 14:05" },
+    { producer:"Eceabat Mandıra", code:"TR-17-008", product:"Ezine Peyniri", batch:"EC-2026-06", place:"Eceabat / Çanakkale", prodDate:"09.08.2026", packDate:"10.04.2027", stt:"15.05.2027", sheep:38, goat:40, cow:22, months:8, finalizedAt:"10.04.2027 09:55" },
+    { producer:"Bozcaada Peynir", code:"TR-17-009", product:"Tulum Peyniri", batch:"BZ-2026-01", place:"Bozcaada / Çanakkale", prodDate:"02.02.2026", packDate:"02.11.2026", stt:"02.12.2026", sheep:40, goat:40, cow:20, months:9, finalizedAt:"02.11.2026 13:30" }, /* sezon dışı (Şubat) */
+    { producer:"Ezine Kooperatif", code:"TR-17-010", product:"Ezine Peyniri", batch:"EZ-2026-99", place:"Ezine / Çanakkale", prodDate:"18.03.2026", packDate:"19.01.2027", stt:"20.02.2027", sheep:45, goat:40, cow:15, months:10, finalizedAt:"19.01.2027 16:11" },
   ];
 
-  const seeded = seededRaw.map(x => {
-    const totalMilk = (Number.isFinite(x.sheep) && Number.isFinite(x.goat) && Number.isFinite(x.cow))
-      ? (x.sheep + x.goat + x.cow) : null;
+  // ensure at least 10 demo records, but don't duplicate by (code+batch+prodDate)
+  const key = (x) => `${x.code}|${x.batch}|${x.prodDate}`;
+  const existing = new Set(arr.map(key));
 
+  seedRaw.forEach(x=>{
+    if(existing.has(key(x))) return;
+
+    const totalMilk = x.sheep + x.goat + x.cow;
     const res = evaluateRules({
       prodDateTR: x.prodDate,
       prodDate: parseFlexibleDate(x.prodDate),
@@ -886,11 +877,11 @@ function loadRecords(){
       sheep: x.sheep,
       goat: x.goat,
       cow: x.cow,
-      total: totalMilk ?? 0,
+      total: totalMilk,
       milkAny: true
     });
 
-    return makeRecord({
+    arr.push(makeRecord({
       ...x,
       totalMilk,
       status: res.status,
@@ -898,21 +889,17 @@ function loadRecords(){
       reasonsOk: res.reasonsOk,
       totalWarning: res.totalWarning,
       seasonOk: res.seasonOk
-    });
+    }));
   });
 
-  localStorage.setItem(STORE_KEY, JSON.stringify(seeded));
-  return seeded;
+  // if still too few, add nothing else; save
+  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+  return arr;
 }
-function saveRecords(){ localStorage.setItem(STORE_KEY, JSON.stringify(records)); }
 
-/* PRODUCER FLOW */
+/* PRODUCER */
 function lockProducerInputs(locked){
-  const ids = [
-    "pProduct","pBatch","pPlace","pSttText",
-    "pProdDateText","pPackDateText",
-    "pSheep","pGoat","pCow"
-  ];
+  const ids = ["pProduct","pBatch","pDistrict","pSttText","pProdDateText","pPackDateText","pSheep","pGoat","pCow"];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;
@@ -931,10 +918,9 @@ function lockProducerInputs(locked){
   btn.style.opacity = locked ? "0.55" : "1";
   btn.style.cursor = locked ? "not-allowed" : "pointer";
 }
-
 function resetProducerForm(){
   const clearIds = [
-    "pProduct","pBatch","pPlace",
+    "pProduct","pBatch","pDistrict",
     "pSttText","pSttPicker",
     "pProdDateText","pProdDatePicker",
     "pPackDateText","pPackDatePicker",
@@ -945,18 +931,20 @@ function resetProducerForm(){
     const el = document.getElementById(id);
     if(el){ el.value = ""; if(el.type==="number") el.disabled = false; }
   });
-
   document.getElementById("producerResult").innerHTML = "";
   document.getElementById("liveChips").innerHTML = "";
+  document.getElementById("milkTotalWarn").style.display = "none";
   lockProducerInputs(false);
 }
-
 function finalizeRecord(){
   const producer = document.getElementById("pName").value.trim();
   const code = document.getElementById("pCode").value.trim();
   const product = document.getElementById("pProduct").value.trim();
   const batch = document.getElementById("pBatch").value.trim();
-  const place = document.getElementById("pPlace").value.trim();
+
+  const district = document.getElementById("pDistrict").value.trim();
+  const place = district ? `${district} / Çanakkale` : "";
+
   const stt = document.getElementById("pSttText").value.trim();
   const prodTR = document.getElementById("pProdDateText").value.trim();
   const packTR = document.getElementById("pPackDateText").value.trim();
@@ -968,8 +956,8 @@ function finalizeRecord(){
   const goat  = parseFloat(document.getElementById("pGoat").value);
   const cow   = parseFloat(document.getElementById("pCow").value);
 
-  if(!product || !batch || !place){
-    alert("Lütfen Ürün Adı, Parti No ve Üretim Yeri alanlarını doldurun.");
+  if(!product || !batch || !district){
+    alert("Lütfen Ürün Adı, Parti No ve Üretim Yeri (İlçe) alanlarını doldurun.");
     return;
   }
   if(!prodDate || !packDate){
@@ -977,7 +965,7 @@ function finalizeRecord(){
     return;
   }
   if(!stt || !parseFlexibleDate(stt)){
-    alert("Lütfen STT (Son Tüketim Tarihi) girin (gg.aa.yyyy).");
+    alert("Lütfen STT girin (gg.aa.yyyy).");
     return;
   }
   if(!Number.isFinite(sheep) || !Number.isFinite(goat) || !Number.isFinite(cow)){
@@ -1021,8 +1009,7 @@ function finalizeRecord(){
   lockProducerInputs(true);
 
   const cls = (rec.status === "Uygun") ? "ok" : "bad";
-  const headline =
-    rec.status === "Uygun"
+  const headline = rec.status === "Uygun"
     ? "✅ Kayıt başarıyla tamamlandı (Uygun)"
     : "✅ Kayıt tamamlandı (Uygunsuz)";
 
@@ -1037,259 +1024,20 @@ function finalizeRecord(){
   document.getElementById("producerResult").innerHTML = `
     <div class="statusBox ${cls}">
       ${headline}<br>
-      <span class="muted">Referans:</span> ${rec.ref} &nbsp;|&nbsp;
-      <span class="muted">Hash:</span> ${rec.hash}<br>
-      <span class="muted">Olgunlaşma:</span> ${rec.months} ay &nbsp;|&nbsp;
+      <span class="muted">Referans:</span> ${escapeHtml(rec.ref)} &nbsp;|&nbsp;
+      <span class="muted">Hash:</span> ${escapeHtml(rec.hash)}<br>
+      <span class="muted">Olgunlaşma:</span> ${Number.isFinite(rec.months)?rec.months:"-"} ay &nbsp;|&nbsp;
       <span class="muted">Sezon:</span> ${(rec.seasonOk===true?"Mart–Ağustos":(rec.seasonOk===false?"Sezon dışı":"-"))}
       ${badList}
       ${warn}
       <div class="actionsRow">
         <button class="btn-primary btn-inline" onclick="resetProducerForm()">➕ Yeni ürün / yeni parti ekle</button>
-        <button class="btn-ghost btn-inline" onclick="openModalByRef('${rec.ref.replaceAll("'","")}')">Detay Gör</button>
       </div>
     </div>
   `;
-}
-
-/* STATE TABLE */
-function renderTable(){
-  const q = (document.getElementById("q")?.value || "").toLowerCase();
-  const sf = document.getElementById("statusFilter")?.value || "";
-  const af = document.getElementById("ageFilter")?.value || "";
-  const sez = document.getElementById("seasonFilter")?.value || "";
-
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-  let shown = 0;
-
-  records.forEach(r => {
-    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash} ${r.place} ${r.stt}`.toLowerCase();
-    if(q && !hay.includes(q)) return;
-    if(sf && r.status !== sf) return;
-    if(af==="lt8" && !(Number.isFinite(r.months) && r.months < 8)) return;
-    if(af==="gte8" && !(Number.isFinite(r.months) && r.months >= 8)) return;
-    if(sez==="in" && r.seasonOk !== true) return;
-    if(sez==="out" && r.seasonOk !== false) return;
-
-    const tr = document.createElement("tr");
-    tr.onclick = () => openDetailModal(r);
-
-    tr.innerHTML = `
-      <td data-label="Referans">
-        <div class="stackRight">
-          <div class="line1"><strong>${escapeHtml(r.ref)}</strong></div>
-          <div class="line2">${escapeHtml(r.hash)}</div>
-        </div>
-      </td>
-
-      <td data-label="Üretici">
-        <div class="stackRight">
-          <div class="line1">${escapeHtml(r.producer)}</div>
-          <div class="line2">${escapeHtml(r.code)}</div>
-        </div>
-      </td>
-
-      <td data-label="Ürün"><span class="oneLineRight">${escapeHtml(r.product)}</span></td>
-      <td data-label="Parti"><span class="oneLineRight">${escapeHtml(r.batch)}</span></td>
-      <td data-label="Üretim Yeri"><span class="oneLineRight">${escapeHtml(r.place || "-")}</span></td>
-      <td data-label="Üretim"><span class="oneLineRight">${escapeHtml(r.prodDate || "-")}</span></td>
-      <td data-label="STT"><span class="oneLineRight">${escapeHtml(r.stt || "-")}</span></td>
-      <td data-label="Ay"><span class="oneLineRight">${Number.isFinite(r.months)? r.months : "-"}</span></td>
-      <td data-label="Durum" class="${r.status==='Uygun'?'status-ok':'status-bad'}">
-        <span class="oneLineRight">${escapeHtml(r.status)}</span>
-      </td>
-      <td data-label="Finalizasyon"><span class="oneLineRight">${escapeHtml(r.finalizedAt || "-")}</span></td>
-    `;
-
-    tbody.appendChild(tr);
-    shown++;
-  });
-
-  document.getElementById("countInfo").textContent = `Gösterilen kayıt: ${shown} / Toplam: ${records.length}`;
-}
-
-/* MODAL */
-function openModalByRef(ref){
-  const r = records.find(x => x.ref === ref);
-  if(r) openDetailModal(r);
-}
-
-function openDetailModal(r){
-  document.getElementById("modal").style.display = "flex";
-  const statusClass = r.status === "Uygun" ? "ok" : "bad";
-
-  const badList = (r.reasonsBad && r.reasonsBad.length)
-    ? `<ul style="margin:8px 0 0 18px">${r.reasonsBad.map(x=>`<li>❌ ${escapeHtml(x)}</li>`).join("")}</ul>`
-    : `<div class="small" style="margin-top:6px">Tüm otomatik değerlendirme kuralları sağlanmıştır.</div>`;
-
-  const okList = (r.reasonsOk && r.reasonsOk.length)
-    ? `<ul style="margin:8px 0 0 18px">${r.reasonsOk.map(x=>`<li>✅ ${escapeHtml(x)}</li>`).join("")}</ul>`
-    : "";
-
-  const warn = r.totalWarning
-    ? `<div class="small" style="margin-top:10px">⚠️ ${escapeHtml(r.totalWarning)}</div>`
-    : "";
-
-  const totalMilk = Number.isFinite(r.totalMilk)
-    ? r.totalMilk
-    : (Number.isFinite(r.sheep)&&Number.isFinite(r.goat)&&Number.isFinite(r.cow) ? (r.sheep+r.goat+r.cow) : null);
-
-  document.getElementById("modalContent").innerHTML = `
-    <div class="modalHeader">
-      <div>
-        <h2>Kayıt Detayı</h2>
-        <div class="small">Read-only – manuel müdahale yoktur.</div>
-      </div>
-      <button class="btn-ghost btn-inline" onclick="closeModal()">Kapat</button>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="kv">
-      <div class="k">Referans No</div><div class="v">${escapeHtml(r.ref)}</div>
-      <div class="k">Hash</div><div class="v">${escapeHtml(r.hash)}</div>
-      <div class="k">Durum</div><div class="v"><span class="${statusClass} statusBox" style="display:inline-block;padding:8px 12px;margin:0">${escapeHtml(r.status)}</span></div>
-      <div class="k">Sezon</div><div class="v">${(r.seasonOk===true?"Mart–Ağustos":(r.seasonOk===false?"Sezon dışı":"-"))}</div>
-      <div class="k">Olgunlaşma</div><div class="v">${Number.isFinite(r.months)?`${r.months} ay`:"-"}</div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="kv">
-      <div class="k">Üretici</div><div class="v">${escapeHtml(r.producer)}</div>
-      <div class="k">Üretici Kodu</div><div class="v">${escapeHtml(r.code)}</div>
-      <div class="k">Ürün</div><div class="v">${escapeHtml(r.product)}</div>
-      <div class="k">Parti No</div><div class="v">${escapeHtml(r.batch)}</div>
-      <div class="k">Üretim Yeri</div><div class="v">${escapeHtml(r.place || "-")}</div>
-      <div class="k">Üretim Tarihi</div><div class="v">${escapeHtml(r.prodDate || "-")}</div>
-      <div class="k">Paketleme Tarihi</div><div class="v">${escapeHtml(r.packDate || "-")}</div>
-      <div class="k">STT</div><div class="v">${escapeHtml(r.stt || "-")}</div>
-      <div class="k">Süt Oranları</div>
-      <div class="v">Koyun: ${safeNum(r.sheep)}% • Keçi: ${safeNum(r.goat)}% • İnek: ${safeNum(r.cow)}% (Toplam: ${totalMilk==null?"-":totalMilk}%)</div>
-      <div class="k">Finalizasyon</div><div class="v">${escapeHtml(r.finalizedAt || "-")}</div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div>
-      <strong>Otomatik Değerlendirme Sonuçları</strong>
-      ${badList}
-      ${okList ? `<div style="margin-top:10px"><strong>Sağlanan Kurallar</strong>${okList}</div>` : ""}
-      ${warn}
-    </div>
-  `;
-}
-function closeModal(){ document.getElementById("modal").style.display = "none"; }
-
-/* EXPORT CSV */
-function exportCSV(){
-  const q = (document.getElementById("q")?.value || "").toLowerCase();
-  const sf = document.getElementById("statusFilter")?.value || "";
-  const af = document.getElementById("ageFilter")?.value || "";
-  const sez = document.getElementById("seasonFilter")?.value || "";
-
-  const rows = [];
-  rows.push([
-    "Referans","Hash","Uretici","UreticiKodu","Urun","PartiNo","UretimYeri",
-    "UretimTarihi","PaketlemeTarihi","STT",
-    "Koyun","Keci","Inek","Toplam","Ay","Sezon","Durum","Nedenler","Finalizasyon"
-  ]);
-
-  records.forEach(r=>{
-    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash} ${r.place} ${r.stt}`.toLowerCase();
-    if(q && !hay.includes(q)) return;
-    if(sf && r.status !== sf) return;
-    if(af==="lt8" && !(Number.isFinite(r.months) && r.months < 8)) return;
-    if(af==="gte8" && !(Number.isFinite(r.months) && r.months >= 8)) return;
-    if(sez==="in" && r.seasonOk !== true) return;
-    if(sez==="out" && r.seasonOk !== false) return;
-
-    const nedenler = (r.reasonsBad && r.reasonsBad.length) ? r.reasonsBad.join(" | ") : "—";
-    const sezonTxt = (r.seasonOk===true?"Mart–Ağustos":(r.seasonOk===false?"Sezon dışı":"-"));
-    const totalMilk = Number.isFinite(r.totalMilk) ? r.totalMilk : (Number.isFinite(r.sheep)&&Number.isFinite(r.goat)&&Number.isFinite(r.cow) ? (r.sheep+r.goat+r.cow) : "");
-
-    rows.push([
-      r.ref, r.hash, r.producer, r.code, r.product, r.batch, r.place,
-      r.prodDate, r.packDate, r.stt,
-      r.sheep, r.goat, r.cow, totalMilk, r.months, sezonTxt, r.status, nedenler, r.finalizedAt
-    ]);
-  });
-
-  const csv = rows.map(r => r.map(cell => {
-    const s = String(cell ?? "");
-    if(s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replaceAll('"','""')}"`;
-    return s;
-  }).join(",")).join("\n");
-
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `proje_canakkale_kayitlar_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* ✅ EXPORT PDF (direct download) */
-function exportPDF(){
-  if(!window.jspdf || !window.jspdf.jsPDF){
-    alert("PDF kütüphanesi yüklenemedi. Lütfen internet bağlantısını kontrol edin.");
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:"pt", format:"a4" });
-
-  const q = (document.getElementById("q")?.value || "").toLowerCase();
-  const sf = document.getElementById("statusFilter")?.value || "";
-  const af = document.getElementById("ageFilter")?.value || "";
-  const sez = document.getElementById("seasonFilter")?.value || "";
-
-  const filtered = records.filter(r=>{
-    const hay = `${r.producer} ${r.code} ${r.product} ${r.batch} ${r.ref} ${r.hash} ${r.place} ${r.stt}`.toLowerCase();
-    if(q && !hay.includes(q)) return false;
-    if(sf && r.status !== sf) return false;
-    if(af==="lt8" && !(Number.isFinite(r.months) && r.months < 8)) return false;
-    if(af==="gte8" && !(Number.isFinite(r.months) && r.months >= 8)) return false;
-    if(sez==="in" && r.seasonOk !== true) return false;
-    if(sez==="out" && r.seasonOk !== false) return false;
-    return true;
-  });
-
-  doc.setFontSize(14);
-  doc.text("Proje Çanakkale – Devlet İzleme Raporu", 40, 40);
-  doc.setFontSize(10);
-  doc.text(`Oluşturma: ${new Date().toLocaleString("tr-TR")}`, 40, 58);
-
-  const head = [[ "Referans","Hash","Üretici","Kod","Ürün","Parti","Yer","Üretim","STT","Ay","Durum" ]];
-  const body = filtered.map(r=>[
-    r.ref,
-    r.hash,
-    r.producer,
-    r.code,
-    r.product,
-    r.batch,
-    r.place || "-",
-    r.prodDate || "-",
-    r.stt || "-",
-    (Number.isFinite(r.months)? r.months : "-"),
-    r.status
-  ]);
-
-  doc.autoTable({
-    head,
-    body,
-    startY: 72,
-    styles: { fontSize: 8, cellPadding: 3 },
-    headStyles: { fillColor: [243,244,246] }
-  });
-
-  doc.save(`proje_canakkale_rapor_${new Date().toISOString().slice(0,10)}.pdf`);
 }
 
 /* helpers */
-function safeNum(n){ return Number.isFinite(n) ? n : "-"; }
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;")
@@ -1298,14 +1046,142 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#39;");
 }
+function closeModal(){ document.getElementById("modal").style.display = "none"; }
 
-/* keep sync across tabs */
-window.addEventListener("storage", () => {
-  records = loadRecords();
-  if(document.getElementById("stateView").style.display !== "none"){
-    renderTable();
+/* STATE */
+function renderTable(){
+  const body = document.getElementById("tableBody");
+  const q = (document.getElementById("q").value || "").toLowerCase();
+  const sf = document.getElementById("statusFilter").value;
+  const af = document.getElementById("ageFilter").value;
+  const seas = document.getElementById("seasonFilter").value;
+
+  const filtered = records.filter(r=>{
+    const hay = `${r.ref} ${r.hash} ${r.producer} ${r.code} ${r.product} ${r.batch} ${r.place} ${r.stt}`.toLowerCase();
+    if(q && !hay.includes(q)) return false;
+    if(sf && r.status !== sf) return false;
+    if(af === "lt8" && !(Number.isFinite(r.months) && r.months < 8)) return false;
+    if(af === "gte8" && !(Number.isFinite(r.months) && r.months >= 8)) return false;
+    if(seas === "in" && r.seasonOk !== true) return false;
+    if(seas === "out" && r.seasonOk !== false) return false;
+    return true;
+  });
+
+  body.innerHTML = filtered.map(r=>{
+    const statusClass = r.status === "Uygun" ? "status-ok" : "status-bad";
+    return `
+      <tr onclick="openDetail('${r.ref}')">
+        <td data-label="Referans"><span class="oneLineRight">${escapeHtml(r.ref)}</span></td>
+        <td data-label="Hash"><span class="oneLineRight">${escapeHtml(r.hash)}</span></td>
+        <td data-label="Üretici"><span class="oneLineRight">${escapeHtml(r.producer)}</span></td>
+        <td data-label="Kod"><span class="oneLineRight">${escapeHtml(r.code)}</span></td>
+        <td data-label="Ürün"><span class="oneLineRight">${escapeHtml(r.product)}</span></td>
+        <td data-label="Parti"><span class="oneLineRight">${escapeHtml(r.batch)}</span></td>
+        <td data-label="Yer"><span class="oneLineRight">${escapeHtml(r.place)}</span></td>
+        <td data-label="Üretim"><span class="oneLineRight">${escapeHtml(r.prodDate||"-")}</span></td>
+        <td data-label="STT"><span class="oneLineRight">${escapeHtml(r.stt||"-")}</span></td>
+        <td data-label="Ay"><span class="oneLineRight">${Number.isFinite(r.months)?r.months:"-"}</span></td>
+        <td data-label="Durum"><span class="${statusClass} oneLineRight">${escapeHtml(r.status)}</span></td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("countInfo").textContent = `${filtered.length} kayıt gösteriliyor.`;
+}
+
+function openDetail(ref){
+  const r = records.find(x => x.ref === ref);
+  if(!r) return;
+
+  const reasons = (r.reasonsBad && r.reasonsBad.length)
+    ? `<ul style="margin:8px 0 0 18px">${r.reasonsBad.map(x=>`<li>❌ ${escapeHtml(x)}</li>`).join("")}</ul>`
+    : `<div class="small" style="margin-top:6px">✅ Tüm kurallar sağlandı.</div>`;
+
+  document.getElementById("modalContent").innerHTML = `
+    <div class="modalHeader">
+      <div>
+        <h2>Kayıt Detayı</h2>
+        <div class="small muted">Referans: <strong>${escapeHtml(r.ref)}</strong> • Hash: <strong>${escapeHtml(r.hash)}</strong></div>
+      </div>
+      <button class="btn-ghost btn-inline" onclick="closeModal()">Kapat</button>
+    </div>
+    <div class="hr"></div>
+    <div class="kv">
+      <div class="k">Üretici</div><div class="v">${escapeHtml(r.producer)} (${escapeHtml(r.code)})</div>
+      <div class="k">Ürün</div><div class="v">${escapeHtml(r.product)}</div>
+      <div class="k">Parti</div><div class="v">${escapeHtml(r.batch)}</div>
+      <div class="k">Üretim Yeri</div><div class="v">${escapeHtml(r.place)}</div>
+      <div class="k">Üretim Tarihi</div><div class="v">${escapeHtml(r.prodDate||"-")}</div>
+      <div class="k">Paketleme Tarihi</div><div class="v">${escapeHtml(r.packDate||"-")}</div>
+      <div class="k">STT</div><div class="v">${escapeHtml(r.stt||"-")}</div>
+      <div class="k">Süt Oranları</div>
+      <div class="v">Koyun: ${escapeHtml(r.sheep)}% • Keçi: ${escapeHtml(r.goat)}% • İnek: ${escapeHtml(r.cow)}% (Toplam: ${escapeHtml(r.totalMilk)}%)</div>
+      <div class="k">Olgunlaşma</div><div class="v">${Number.isFinite(r.months)?r.months:"-"} ay</div>
+      <div class="k">Durum</div><div class="v"><strong>${escapeHtml(r.status)}</strong></div>
+      <div class="k">Finalizasyon</div><div class="v">${escapeHtml(r.finalizedAt||"-")}</div>
+    </div>
+    <div class="hr"></div>
+    <div><strong>Değerlendirme:</strong>${reasons}</div>
+  `;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function exportCSV(){
+  const rows = [
+    ["Referans","Hash","Üretici","Üretici Kodu","Ürün","Parti","Üretim Yeri","Üretim Tarihi","Paketleme Tarihi","STT","Koyun","Keçi","İnek","Toplam","Ay","Durum","Finalizasyon"]
+  ];
+  records.forEach(r=>{
+    rows.push([
+      r.ref, r.hash, r.producer, r.code, r.product, r.batch, r.place,
+      r.prodDate, r.packDate, r.stt, r.sheep, r.goat, r.cow, r.totalMilk,
+      r.months, r.status, r.finalizedAt
+    ]);
+  });
+
+  const csv = rows.map(row => row.map(v => `"${String(v ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "proje_canakkale_demo.csv";
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+/* ✅ FIX: PDF Landscape + komprimiert -> 1 Seite */
+function exportPDF(){
+  if(!window.__pdfReady || !window.jspdf || !window.jspdf.jsPDF){
+    alert("PDF kütüphanesi henüz yüklenmedi. Lütfen 1-2 saniye sonra tekrar deneyin veya 'PDF (Yazdır)' kullanın.");
+    return;
   }
-});
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF({orientation:"landscape", unit:"pt", format:"a4"});
+  doc.setFontSize(14);
+  doc.text("Proje Çanakkale – Devlet İzleme Paneli (Demo)", 40, 36);
+  doc.setFontSize(10);
+  doc.text(`Kayıt sayısı: ${records.length}`, 40, 54);
+
+  const head = [[ "Referans","Hash","Üretici","Kod","Ürün","Parti","Yer","Üretim","STT","Ay","Durum" ]];
+  const body = records.map(r=>[
+    r.ref, r.hash, r.producer, r.code, r.product, r.batch, r.place, r.prodDate, r.stt, String(r.months ?? ""), r.status
+  ]);
+
+  doc.autoTable({
+    startY: 72,
+    head,
+    body,
+    theme: "grid",
+    styles:{ fontSize:7, cellPadding:3, overflow:"linebreak" },
+    headStyles:{ fillColor:[240,240,240] },
+    margin:{left:36,right:36},
+    tableWidth: "auto",
+    pageBreak: "avoid"
+  });
+
+  doc.save("proje_canakkale_demo.pdf");
+}
+
+function printFallback(){ window.print(); }
 </script>
 
 </body>
